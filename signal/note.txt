@@ -1,0 +1,27 @@
+If you want to know what the daemon itself is doing, you might consider
+running a separate copy of the daemon to test against. This will allow
+you to put the daemon under a debugger, or run it with verbose output,
+without messing up your real session and system daemons.
+
+To run a separate test copy of the daemon, for example you might open
+a terminal and type:
+    DBUS_VERBOSE=1 dbus-daemon --session --print-address
+
+The test daemon address will be printed when the daemon starts. You will
+need to copy-and-paste this address and use it as the value of the
+DBUS_SESSION_BUS_ADDRESS environment variable when you launch the
+applications you want to test. This will cause those applications to
+connect to your test bus instead of the DBUS_SESSION_BUS_ADDRESS of your
+real session bus.
+
+DBUS_VERBOSE=1 will have NO EFFECT unless your copy of D-Bus was
+compiled with verbose mode enabled. This is not recommended in production
+builds due to performance impact. You may need to rebuild D-Bus if your copy
+was not built with debugging in mind. (DBUS_VERBOSE also affects the D-Bus
+library and thus applications using D-Bus; it may be useful to see verbose
+ output on both the client side and from the daemon.)
+
+If you want to get fancy, you can create a custom bus configuration for
+your test bus (see the session.conf and system.conf files that define the
+two default configurations for example). This would allow you to specify a
+different directory for .service files, for example.
