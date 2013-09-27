@@ -29,22 +29,28 @@ main(int argc, char** argv)
     DBusMessage* msg = NULL;
     DBusMessageIter args;
     dbus_uint32_t serial = 0;
-    const char* sigvalue = "Hello world";
+    //const char* sigvalue = "Hello world";
+    char buf[128];
+    char* sigvalue = buf;
+    int i;
 
     printf("Init dbus...\n");
     bus = dbusInit();
 
-    msg = dbus_message_new_signal("/test/signal/Object",
-            "test.signal.Type",
-            "Test");
-    dbus_message_iter_init_append(msg, &args);
-    dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &sigvalue);
+    for (i = 0; i < 4; i++) {
+        msg = dbus_message_new_signal("/test/signal/Object",
+                "test.signal.Type",
+                "Test");
+        dbus_message_iter_init_append(msg, &args);
+        sprintf(buf, "Hello world [%d]", i);
+        dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &sigvalue);
 
-    printf("Sending signal...\n");
-    dbus_connection_send(bus, msg, &serial);
+        printf("Sending signal...\n");
+        dbus_connection_send(bus, msg, &serial);
+        dbus_message_unref(msg);
+    }
+
     dbus_connection_flush(bus);
-
-    dbus_message_unref(msg);
 
     printf("Cleaning up connection\n");
     dbus_connection_unref(bus);

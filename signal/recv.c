@@ -45,34 +45,34 @@ main(int argc, char** argv)
     bus = dbusInit();
 
     printf("Waiting...\n");
+    //while (dbus_connection_read_write(bus, -1))
     while (dbus_connection_read_write_dispatch(bus, -1)) {
         char* sigvalue;
 
         msg = dbus_connection_pop_message(bus);
-
-        if (msg == NULL) {
+        if (msg == NULL)
             continue;
-        }
+        do {
+            printf("Received message:\n");
+            print_message(msg, 0);
+            printf("\n");
 
-        printf("Received message:\n");
-        print_message(msg, 0);
-        printf("\n");
-
-        if (dbus_message_is_signal(msg, "test.signal.Type", "Test")) {
-            if (!dbus_message_iter_init(msg, &args))
-                fprintf(stderr, "Message has no arguments!\n");
-            else
-            if (DBUS_TYPE_STRING != dbus_message_iter_get_arg_type(&args))
-                fprintf(stderr, "Argument is not string!\n");
-            else {
-                dbus_message_iter_get_basic(&args, &sigvalue);
-                printf("Got signal with value %s\n", sigvalue);
+            if (dbus_message_is_signal(msg, "test.signal.Type", "Test")) {
+                if (!dbus_message_iter_init(msg, &args))
+                    fprintf(stderr, "Message has no arguments!\n");
+                else
+                if (DBUS_TYPE_STRING != dbus_message_iter_get_arg_type(&args))
+                    fprintf(stderr, "Argument is not string!\n");
+                else {
+                    dbus_message_iter_get_basic(&args, &sigvalue);
+                    printf("Got signal with value %s\n", sigvalue);
+                }
+            } else {
+                printf("Message filtered out\n");
             }
-        } else {
-            printf("Message filtered out\n");
-        }
 
-        dbus_message_unref(msg);
+            dbus_message_unref(msg);
+        } while ((msg = dbus_connection_pop_message(bus)) != NULL);
         printf("\nWaiting...\n");
     }
 }
