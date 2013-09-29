@@ -19,15 +19,16 @@ dbusInit()
     if (dbus_error_is_set(&err)) {
         fprintf(stderr, "Connection error: %s\n", err.message);
         dbus_error_free(&err);
+        return NULL;
     }
 
     dbus_bus_add_match(bus, "type='signal',interface='test.signal.Type'",
             &err);
-    dbus_connection_flush(bus);
     if (dbus_error_is_set(&err)) {
         fprintf(stderr, "Match error: %s\n", err.message);
         dbus_error_free(&err);
-        exit(1);
+        dbus_connection_unref(bus);
+        return NULL;
     }
 
     return bus;
@@ -43,6 +44,8 @@ main(int argc, char** argv)
 
     printf("Init dbus...\n");
     bus = dbusInit();
+    if (bus == NULL)
+        return -1;
 
     printf("Waiting...\n");
     //while (dbus_connection_read_write(bus, -1))
@@ -75,5 +78,7 @@ main(int argc, char** argv)
         } while ((msg = dbus_connection_pop_message(bus)) != NULL);
         printf("\nWaiting...\n");
     }
+
+    return 0;
 }
 
